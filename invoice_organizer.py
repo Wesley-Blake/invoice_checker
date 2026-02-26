@@ -36,7 +36,7 @@ def get_data() -> tuple[tuple[str],tuple[str]]:
 def my_move(src: Path, dest: Path) -> None:
     destination = dest / src.name
     if destination.exists():
-        SystemExit(1)
+        src.unlink()
     else:
         move(src, destination)
 
@@ -44,7 +44,7 @@ def main():
     invoice_paid, invoice_manager = get_data()
 
     # Collect invoice dirs.
-    with open("invoices\secrets.txt","r") as file:
+    with open("invoice_checker\\secrets.txt","r") as file:
         dir_invoice = Path(file.readline()[:-1])
         dir_manager = Path(file.readline()[:-1])
         dir_completed = Path(file.readline()[:-1])
@@ -57,18 +57,22 @@ def main():
         print("Path errors in invoices.")
         SystemExit(1)
 
-    for file in dir_invoice.iterdir():
-        if file.is_file() and file.name.startswith(invoice_paid):
-            print(f"Completed in dir_invoice: {file}")
-            my_move(file, dir_completed)
-        elif file.is_file() and file.name.startswith(invoice_manager):
-            print(f"Pending in dir_manager: {file}")
-            my_move(file, dir_manager)
-    # Check manager dir for completed and manager level, then move.
     for file in dir_manager.iterdir():
-        if file.is_file() and file.name.startswith(invoice_paid):
-            print(f"Completed in dir_invoice: {file}")
-            my_move(file, dir_completed)
+        if file.is_file():
+            for m in invoice_manager:
+                if m in file.name:
+                    print(f"Pending in dir_manager: {file}")
+                    my_move(file, dir_manager)
+    for file in dir_invoice.iterdir():
+        if file.is_file():
+            for p in invoice_paid:
+                if p in file.name:
+                    print(f"Completed in dir_invoice: {file}")
+                    my_move(file, dir_completed)
+            for m in invoice_manager:
+                if m in file.name:
+                    print(f"Pending in dir_manager: {file}")
+                    my_move(file, dir_manager)
 
 
 if __name__ == '__main__':
