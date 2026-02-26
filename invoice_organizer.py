@@ -61,17 +61,17 @@ def main():
         if file.is_file():
             for p in invoice_paid:
                 if p in file.name:
-                    print(f"Completed in dir_invoice: {file}")
+                    print(f"Completed in dir_invoice: {file.name}")
                     my_move(file, dir_completed)
             for m in invoice_manager:
                 if m in file.name:
-                    print(f"Pending in dir_manager: {file}")
+                    print(f"Pending in dir_manager: {file.name}")
                     my_move(file, dir_manager)
     for file in dir_manager.iterdir():
         if file.is_file():
             for p in invoice_paid:
                 if p in file.name:
-                    print(f"Completed in dir_manager: {file}")
+                    print(f"Completed in dir_manager: {file.name}")
                     my_move(file, dir_completed)
 
 
