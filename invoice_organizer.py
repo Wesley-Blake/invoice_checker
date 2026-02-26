@@ -57,12 +57,6 @@ def main():
         print("Path errors in invoices.")
         SystemExit(1)
 
-    for file in dir_manager.iterdir():
-        if file.is_file():
-            for m in invoice_manager:
-                if m in file.name:
-                    print(f"Pending in dir_manager: {file}")
-                    my_move(file, dir_manager)
     for file in dir_invoice.iterdir():
         if file.is_file():
             for p in invoice_paid:
@@ -73,6 +67,12 @@ def main():
                 if m in file.name:
                     print(f"Pending in dir_manager: {file}")
                     my_move(file, dir_manager)
+    for file in dir_manager.iterdir():
+        if file.is_file():
+            for p in invoice_paid:
+                if p in file.name:
+                    print(f"Completed in dir_manager: {file}")
+                    my_move(file, dir_completed)
 
 
 if __name__ == '__main__':
