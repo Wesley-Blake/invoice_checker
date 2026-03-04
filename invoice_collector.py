@@ -9,7 +9,7 @@ def main(dest_dir: Path):
         print(dest_dir)
         SystemExit(1)
     TODAY = datetime.now().date().isoformat()
-    # Access outlook eamil.
+    # Access outlook email.
     outlook = win32com.client.Dispatch("Outlook.Application")
     namespace = outlook.GetNamespace("MAPI")
     # Get to invoice mailbox.
@@ -23,6 +23,7 @@ def main(dest_dir: Path):
             print("Weird email, leaving it here.")
             continue
         if attachment_count == 1:
+            attachment = message.Attachments.Item(1)
             if (
                 attachment.FileName.startswith("~WRD") or
                 attachment.FileName.startswith("image")
