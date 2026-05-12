@@ -16,8 +16,10 @@ def main(dest_dir: Path):
     inbox = namespace.GetDefaultFolder(6)
     subfolder = inbox.Folders['Invoices']
 
+    index = 0
     messages = subfolder.Items
-    for message in messages:
+    while index < len(messages):
+        message = messages[index]
         attachment_count = message.Attachments.Count
         if attachment_count == 0:
             print("Weird email, leaving it here.")
@@ -44,6 +46,8 @@ def main(dest_dir: Path):
                 attachment.SaveAsFile(file_path)
         else:
             message.Delete()
+            messages = subfolder.Items
+        index += 1
 
 
 if __name__ == '__main__':
