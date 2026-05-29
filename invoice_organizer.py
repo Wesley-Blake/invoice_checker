@@ -1,6 +1,7 @@
 from pathlib import Path
 from shutil import move
 import pandas as pd
+import configparser
 
 def get_data() -> tuple[tuple[str],tuple[str]]:
     DOWNLOADS = Path.home() / "Downloads"
@@ -43,18 +44,20 @@ def main():
     invoice_paid, invoice_manager = get_data()
 
     # Collect invoice dirs.
-    with open("invoice_checker\\secrets.txt","r") as file:
-        dir_invoice = Path(file.readline()[:-1])
-        dir_manager = Path(file.readline()[:-1])
-        dir_completed = Path(file.readline()[:-1])
+    cfg = configparser.ConfigParser()
+    if cfg.read('.env'):
+        dir_invoice = Path(cfg['invoice_checker']['invoices_path'])
+        dir_manager = Path(cfg['invoice_checker']['manager_path'])
+        dir_completed = Path(cfg['invoice_checker']['completed_path'])
+    else:
+        raise FileNotFoundError(".env file not found.")
 
     if not (
         dir_invoice.is_dir() and
         dir_manager.is_dir() and
         dir_completed.is_dir()
     ):
-        print("Path errors in invoices.")
-        SystemExit(1)
+        raise FileNotFoundError("One or more invoice directories not found.")
 
     for file in dir_invoice.iterdir():
         if file.is_file():

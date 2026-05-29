@@ -8,7 +8,7 @@ import pandas as pd
 def main(dest_dir: Path):
     if not dest_dir.exists():
         print(dest_dir)
-        SystemExit(1)
+        raise SystemExit(1)
     TODAY = datetime.now().date().isoformat()
     # Access outlook email.
     outlook = win32com.client.Dispatch("Outlook.Application")
@@ -52,6 +52,10 @@ def main(dest_dir: Path):
 
 
 if __name__ == '__main__':
-    with open("invoice_checker\\secrets.txt", "r") as file:
-        destination_path = Path(file.readline()[:-1])
-        main(destination_path)
+    import configparser
+    cfg = configparser.ConfigParser()
+    if cfg.read('.env'):
+        dest_path = Path(cfg['invoice_checker']['invoices_path'])
+        main(dest_path)
+    else:
+        raise FileNotFoundError("Destination path not found in config file.")
