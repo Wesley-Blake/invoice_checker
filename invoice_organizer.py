@@ -3,7 +3,8 @@ from shutil import move
 import pandas as pd
 import configparser
 
-def get_data() -> tuple[tuple[str],tuple[str]]:
+
+def get_data() -> tuple[tuple[str], tuple[str]]:
     DOWNLOADS = Path.home() / "Downloads"
     WHITE_LIST = ["Invoice Number", "Status"]
     for i in DOWNLOADS.iterdir():
@@ -33,12 +34,14 @@ def get_data() -> tuple[tuple[str],tuple[str]]:
         SystemExit(1)
     return paid_tuple, manager_tuple
 
+
 def my_move(src: Path, dest: Path) -> None:
     destination = dest / src.name
     if destination.exists():
         src.unlink()
     else:
         move(src, destination)
+
 
 def main():
     invoice_paid, invoice_manager = get_data()
