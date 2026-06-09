@@ -21,6 +21,10 @@ def main(dest_dir: Path):
     messages = subfolder.Items
     while index < len(messages):
         message = messages[index]
+        if "Emburse Enterprise Invoice" in message.Subject:
+            message.Delete()
+            messages = subfolder.Items
+            continue
         attachment_count = message.Attachments.Count
         if attachment_count == 0:
             print("Weird email, leaving it here.")
