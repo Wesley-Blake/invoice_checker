@@ -21,7 +21,7 @@ def get_data() -> tuple[tuple[str], tuple[str]]:
             duplicates = df[df[WHITE_LIST[0]].duplicated(keep=False)]
             if not duplicates.empty:
                 print(f"Duplicates!: {duplicates}")
-                SystemExit(1)
+                raise SystemExit(1)
             # Get paid invoices
             paid_df = df[df[WHITE_LIST[1]] == "Paid"]
             paid_tuple = tuple(paid_df[WHITE_LIST[0]])
@@ -31,7 +31,7 @@ def get_data() -> tuple[tuple[str], tuple[str]]:
             break
     else:
         print("No invoice doc found (.csv).")
-        SystemExit(1)
+        raise SystemExit(1)
     return paid_tuple, manager_tuple
 
 

@@ -1,8 +1,6 @@
 from pathlib import Path
 from datetime import datetime
 import win32com.client
-import pandas as pd
-
 
 
 def main(dest_dir: Path):
@@ -28,6 +26,7 @@ def main(dest_dir: Path):
         attachment_count = message.Attachments.Count
         if attachment_count == 0:
             print("Weird email, leaving it here.")
+            index += 1
             continue
         if attachment_count == 1:
             attachment = message.Attachments.Item(1)
@@ -36,6 +35,7 @@ def main(dest_dir: Path):
                 attachment.FileName.startswith("image")
             ):
                 print("Weird email, leaving it here.")
+                index += 1
                 continue
 
         for i in range(1, attachment_count + 1):
