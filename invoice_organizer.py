@@ -48,18 +48,14 @@ def main():
 
     # Collect invoice dirs.
     cfg = configparser.ConfigParser()
-    if cfg.read('.env'):
-        dir_invoice = Path(cfg['invoice_checker']['invoices_path'])
-        dir_manager = Path(cfg['invoice_checker']['manager_path'])
-        dir_completed = Path(cfg['invoice_checker']['completed_path'])
+    if cfg.read(".env"):
+        dir_invoice = Path(cfg["invoice_checker"]["invoices_path"])
+        dir_manager = Path(cfg["invoice_checker"]["manager_path"])
+        dir_completed = Path(cfg["invoice_checker"]["completed_path"])
     else:
         raise FileNotFoundError(".env file not found.")
 
-    if not (
-        dir_invoice.is_dir() and
-        dir_manager.is_dir() and
-        dir_completed.is_dir()
-    ):
+    if not (dir_invoice.is_dir() and dir_manager.is_dir() and dir_completed.is_dir()):
         raise FileNotFoundError("One or more invoice directories not found.")
 
     for file in dir_invoice.iterdir():
@@ -80,5 +76,5 @@ def main():
                     my_move(file, dir_completed)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

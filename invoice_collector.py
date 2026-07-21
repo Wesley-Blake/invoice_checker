@@ -13,7 +13,7 @@ def main(dest_dir: Path):
     namespace = outlook.GetNamespace("MAPI")
     # Get to invoice mailbox.
     inbox = namespace.GetDefaultFolder(6)
-    subfolder = inbox.Folders['Invoices']
+    subfolder = inbox.Folders["Invoices"]
 
     index = 0
     messages = subfolder.Items
@@ -30,9 +30,8 @@ def main(dest_dir: Path):
             continue
         if attachment_count == 1:
             attachment = message.Attachments.Item(1)
-            if (
-                attachment.FileName.startswith("~WRD") or
-                attachment.FileName.startswith("image")
+            if attachment.FileName.startswith("~WRD") or attachment.FileName.startswith(
+                "image"
             ):
                 print("Weird email, leaving it here.")
                 index += 1
@@ -55,11 +54,12 @@ def main(dest_dir: Path):
         index += 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import configparser
+
     cfg = configparser.ConfigParser()
-    if cfg.read('.env'):
-        dest_path = Path(cfg['invoice_checker']['invoices_path'])
+    if cfg.read(".env"):
+        dest_path = Path(cfg["invoice_checker"]["invoices_path"])
         main(dest_path)
     else:
         raise FileNotFoundError("Destination path not found in config file.")
