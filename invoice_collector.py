@@ -1,5 +1,6 @@
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 import win32com.client
 
 
@@ -48,9 +49,8 @@ def main(dest_dir: Path):
                 print(f"Invoice exits!: {attachment.FileName}")
             else:
                 attachment.SaveAsFile(file_path)
-        else:
-            message.Delete()
-            messages = subfolder.Items
+        message.Delete()
+        messages = subfolder.Items
         index += 1
 
 

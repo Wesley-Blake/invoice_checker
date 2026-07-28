@@ -1,7 +1,8 @@
+import configparser
 from pathlib import Path
 from shutil import move
+
 import pandas as pd
-import configparser
 
 
 def get_data() -> tuple[tuple[str], tuple[str]]:
