@@ -1,3 +1,11 @@
+"""Pull invoice attachments from an Outlook mailbox into a local directory.
+
+Scans the "Invoices" subfolder of the default Outlook inbox, saves attachments
+from each message to dest_dir (prefixed with today's date), and deletes the
+message afterward. Automated "Emburse Enterprise Invoice" notification emails
+are deleted without processing.
+"""
+
 from datetime import datetime
 from pathlib import Path
 
@@ -5,6 +13,20 @@ import win32com.client
 
 
 def main(dest_dir: Path):
+    """Save invoice attachments from the Outlook "Invoices" folder into dest_dir.
+
+    Iterates every message in the mailbox's "Invoices" subfolder, saving each
+    attachment (skipping inline images and Word temp files) as
+    "{today's date} - {filename}" in dest_dir, then deletes the message. Messages
+    with the subject "Emburse Enterprise Invoice" are deleted outright without
+    saving attachments.
+
+    Args:
+        dest_dir: Directory to save attachments into. Must already exist.
+
+    Raises:
+        SystemExit: If dest_dir does not exist.
+    """
     if not dest_dir.exists():
         print(dest_dir)
         raise SystemExit(1)

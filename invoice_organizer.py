@@ -1,13 +1,31 @@
+"""Sort local invoice files into paid/pending/completed folders based on a status CSV.
+
+Reads a "My Invoice*.csv" export from the Downloads folder to determine which
+invoice numbers are paid versus still with the manager, then moves the matching
+files between the directories configured in .env.
+"""
+
 import configparser
 from pathlib import Path
 from shutil import move
 
 import pandas as pd
 
+DOWNLOADS = Path.home() / "Downloads"
+WHITE_LIST = ["Invoice Number", "Status"]
+
 
 def get_data() -> tuple[tuple[str], tuple[str]]:
-    DOWNLOADS = Path.home() / "Downloads"
-    WHITE_LIST = ["Invoice Number", "Status"]
+    """Parse the newest "My Invoice*.csv" in Downloads into paid/pending invoice numbers.
+
+    Returns:
+        A tuple of (paid_invoice_numbers, manager_invoice_numbers), each a tuple
+        of invoice number strings.
+
+    Raises:
+        SystemExit: If no matching CSV is found, or if duplicate invoice numbers
+            are detected in the data.
+    """
     for i in DOWNLOADS.iterdir():
         if i.name.startswith("My Invoice") and i.name.endswith(".csv"):
             # Create Dataframe.
@@ -37,6 +55,7 @@ def get_data() -> tuple[tuple[str], tuple[str]]:
 
 
 def my_move(src: Path, dest: Path) -> None:
+    """Move src into dest, or delete src if a file with the same name already exists there."""
     destination = dest / src.name
     if destination.exists():
         src.unlink()
@@ -45,6 +64,11 @@ def my_move(src: Path, dest: Path) -> None:
 
 
 def main():
+    """Move invoice files between the invoice, manager, and completed directories.
+
+    Reads directory paths from .env, then relocates files in the invoice and
+    manager directories according to their paid/pending status from get_data().
+    """
     invoice_paid, invoice_manager = get_data()
 
     # Collect invoice dirs.
@@ -56,25 +80,24 @@ def main():
     else:
         raise FileNotFoundError(".env file not found.")
 
-    if not (dir_invoice.is_dir() and dir_manager.is_dir() and dir_completed.is_dir()):
-        raise FileNotFoundError("One or more invoice directories not found.")
-
-    for file in dir_invoice.iterdir():
-        if file.is_file():
-            for p in invoice_paid:
-                if p in file.name:
-                    print(f"Completed in dir_invoice: {file.name}")
-                    my_move(file, dir_completed)
-            for m in invoice_manager:
-                if m in file.name:
-                    print(f"Pending in dir_manager: {file.name}")
-                    my_move(file, dir_manager)
     for file in dir_manager.iterdir():
-        if file.is_file():
-            for p in invoice_paid:
-                if p in file.name:
-                    print(f"Completed in dir_manager: {file.name}")
-                    my_move(file, dir_completed)
+        if not file.is_file():
+            continue
+        for p in invoice_paid:
+            if p in file.name:
+                print(f"Completed in dir_manager: {file.name}")
+                my_move(file, dir_completed)
+    for file in dir_invoice.iterdir():
+        if not file.is_file():
+            continue
+        for p in invoice_paid:
+            if p in file.name:
+                print(f"Completed in dir_invoice: {file.name}")
+                my_move(file, dir_completed)
+        for m in invoice_manager:
+            if m in file.name:
+                print(f"Pending in dir_manager: {file.name}")
+                my_move(file, dir_manager)
 
 
 if __name__ == "__main__":
