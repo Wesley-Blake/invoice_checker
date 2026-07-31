@@ -6,7 +6,7 @@ message afterward. Automated "Emburse Enterprise Invoice" notification emails
 are deleted without processing.
 """
 
-from datetime import datetime
+import datetime
 from pathlib import Path
 
 import win32com.client
@@ -30,7 +30,7 @@ def main(dest_dir: Path):
     if not dest_dir.exists():
         print(dest_dir)
         raise SystemExit(1)
-    TODAY = datetime.now().date().isoformat()
+    TODAY = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
     # Access outlook email.
     outlook = win32com.client.Dispatch("Outlook.Application")
     namespace = outlook.GetNamespace("MAPI")
