@@ -60,17 +60,32 @@ def main(dest_dir: Path):
                 index += 1
                 continue
 
+        save_failed = False
         for i in range(1, attachment_count + 1):
             attachment = message.Attachments.Item(i)
             if attachment.FileName.startswith("~WRD"):
                 continue
             if attachment.FileName.startswith("image"):
                 continue
-            file_path = dest_dir / (f"{TODAY} - {attachment.FileName.lower()}")
+            # Strip any directory components so a crafted attachment
+            # filename can't write outside dest_dir.
+            safe_name = Path(attachment.FileName).name.lower()
+            if not safe_name:
+                continue
+            file_path = dest_dir / (f"{TODAY} - {safe_name}")
             if file_path.exists():
                 print(f"Invoice exits!: {attachment.FileName}")
-            else:
+                continue
+            try:
                 attachment.SaveAsFile(file_path)
+            except Exception as e:
+                print(f"Failed to save attachment {attachment.FileName}: {e}")
+                save_failed = True
+        if save_failed:
+            # Leave the message in place so a failed save doesn't lose
+            # the only copy of the attachment.
+            index += 1
+            continue
         message.Delete()
         messages = subfolder.Items
         index += 1

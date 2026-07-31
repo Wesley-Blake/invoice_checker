@@ -6,6 +6,8 @@ files between the directories configured in .env.
 """
 
 import configparser
+import filecmp
+import re
 from pathlib import Path
 from shutil import move
 
@@ -54,11 +56,33 @@ def get_data() -> tuple[tuple[str], tuple[str]]:
     return paid_tuple, manager_tuple
 
 
+def _contains_invoice_number(filename: str, invoice_number: str) -> bool:
+    """Return True if invoice_number appears in filename as a standalone number.
+
+    Uses digit-boundary matching so invoice number "12" doesn't match a
+    filename containing the unrelated number "1123".
+    """
+    pattern = rf"(?<!\d){re.escape(invoice_number)}(?!\d)"
+    return re.search(pattern, filename) is not None
+
+
 def my_move(src: Path, dest: Path) -> None:
-    """Move src into dest, or delete src if a file with the same name already exists there."""
+    """Move src into dest.
+
+    If a file with the same name already exists at dest, src is only
+    deleted when it's byte-identical to the existing file (a genuine
+    duplicate). Otherwise src is left in place and a warning is printed,
+    since two different invoices can share a filename and deleting src
+    would silently destroy one of them.
+    """
     destination = dest / src.name
     if destination.exists():
-        src.unlink()
+        if filecmp.cmp(src, destination, shallow=False):
+            src.unlink()
+        else:
+            print(
+                f"Skipping move: a different file already exists at {destination}"
+            )
     else:
         move(src, destination)
 
@@ -84,18 +108,18 @@ def main():
         if not file.is_file():
             continue
         for p in invoice_paid:
-            if p in file.name:
+            if _contains_invoice_number(file.name, p):
                 print(f"Completed in dir_manager: {file.name}")
                 my_move(file, dir_completed)
     for file in dir_invoice.iterdir():
         if not file.is_file():
             continue
         for p in invoice_paid:
-            if p in file.name:
+            if _contains_invoice_number(file.name, p):
                 print(f"Completed in dir_invoice: {file.name}")
                 my_move(file, dir_completed)
         for m in invoice_manager:
-            if m in file.name:
+            if _contains_invoice_number(file.name, m):
                 print(f"Pending in dir_manager: {file.name}")
                 my_move(file, dir_manager)
 
