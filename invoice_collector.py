@@ -38,34 +38,34 @@ def main(dest_dir: Path):
     inbox = namespace.GetDefaultFolder(6)
     subfolder = inbox.Folders["Invoices"]
 
-    index = 0
+    no_attachement_count = 0
     messages = subfolder.Items
-    while index < len(messages):
-        message = messages[index]
+    while no_attachement_count < len(messages):
+        current_message = len(messages) - no_attachement_count
+        message = messages[current_message]
         if "Emburse Enterprise Invoice" in message.Subject:
             message.Delete()
             messages = subfolder.Items
             continue
         attachment_count = message.Attachments.Count
         if attachment_count == 0:
-            print("Weird email, leaving it here.")
-            index += 1
+            print("No attachments in email, leaving it here.")
+            no_attachement_count += 1
             continue
         if attachment_count == 1:
             attachment = message.Attachments.Item(1)
-            if attachment.FileName.startswith("~WRD") or attachment.FileName.startswith(
-                "image"
-            ):
-                print("Weird email, leaving it here.")
-                index += 1
+            if not attachment.FileName.lower().endswith(".pdf"):
+                print(
+                    f"Attachments exists, but not PDF{attachment.FileName}, leaving it here."
+                )
+                no_attachement_count += 1
                 continue
 
         save_failed = False
         for i in range(1, attachment_count + 1):
             attachment = message.Attachments.Item(i)
-            if attachment.FileName.startswith("~WRD"):
-                continue
-            if attachment.FileName.startswith("image"):
+            if not attachment.FileName.lower().endswith(".pdf"):
+                no_attachement_count += 1
                 continue
             # Strip any directory components so a crafted attachment
             # filename can't write outside dest_dir.
@@ -84,11 +84,9 @@ def main(dest_dir: Path):
         if save_failed:
             # Leave the message in place so a failed save doesn't lose
             # the only copy of the attachment.
-            index += 1
             continue
         message.Delete()
         messages = subfolder.Items
-        index += 1
 
 
 if __name__ == "__main__":
