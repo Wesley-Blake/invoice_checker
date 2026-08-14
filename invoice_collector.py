@@ -29,7 +29,7 @@ def main(dest_dir: Path):
     """
     if not dest_dir.exists():
         print(dest_dir)
-        raise SystemExit(1)
+        raise FileNotFoundError
     TODAY = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
     # Access outlook email.
     outlook = win32com.client.Dispatch("Outlook.Application")
@@ -39,27 +39,16 @@ def main(dest_dir: Path):
     subfolder = inbox.Folders["Invoices"]
 
     no_attachement_count = 0
-    messages = subfolder.Items
-    while no_attachement_count < len(messages):
-        current_message = len(messages) - no_attachement_count
-        message = messages[current_message]
+    while no_attachement_count < len(messages := subfolder.Items):
+        message = messages[no_attachement_count]
         if "Emburse Enterprise Invoice" in message.Subject:
             message.Delete()
-            messages = subfolder.Items
             continue
         attachment_count = message.Attachments.Count
         if attachment_count == 0:
             print("No attachments in email, leaving it here.")
             no_attachement_count += 1
             continue
-        if attachment_count == 1:
-            attachment = message.Attachments.Item(1)
-            if not attachment.FileName.lower().endswith(".pdf"):
-                print(
-                    f"Attachments exists, but not PDF{attachment.FileName}, leaving it here."
-                )
-                no_attachement_count += 1
-                continue
 
         save_failed = False
         for i in range(1, attachment_count + 1):
@@ -86,7 +75,6 @@ def main(dest_dir: Path):
             # the only copy of the attachment.
             continue
         message.Delete()
-        messages = subfolder.Items
 
 
 if __name__ == "__main__":
