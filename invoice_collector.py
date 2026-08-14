@@ -6,7 +6,7 @@ message afterward. Automated "Emburse Enterprise Invoice" notification emails
 are deleted without processing.
 """
 
-import datetime
+from datetime import date
 from pathlib import Path
 
 import win32com.client
@@ -30,9 +30,11 @@ def main(dest_dir: Path):
     if not dest_dir.exists():
         print(dest_dir)
         raise FileNotFoundError
-    TODAY = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
     # Access outlook email.
-    outlook = win32com.client.Dispatch("Outlook.Application")
+    try:
+        outlook = win32com.client.Dispatch("Outlook.Application")
+    except Exception as e:
+        raise SystemError("You might now have the old outlook vesrion open.") from e
     namespace = outlook.GetNamespace("MAPI")
     # Get to invoice mailbox.
     inbox = namespace.GetDefaultFolder(6)
@@ -61,7 +63,7 @@ def main(dest_dir: Path):
             safe_name = Path(attachment.FileName).name.lower()
             if not safe_name:
                 continue
-            file_path = dest_dir / (f"{TODAY} - {safe_name}")
+            file_path = dest_dir / (f"{date.today().isoformat()} - {safe_name}")
             if file_path.exists():
                 print(f"Invoice exits!: {attachment.FileName}")
                 continue
