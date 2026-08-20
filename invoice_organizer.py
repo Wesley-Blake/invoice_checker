@@ -47,7 +47,7 @@ def get_data() -> tuple[tuple[str], tuple[str]]:
             paid_df = df[df[WHITE_LIST[1]] == "Paid"]
             paid_tuple = tuple(paid_df[WHITE_LIST[0]])
             # Everything else is with manager.
-            manager_df = df[df[WHITE_LIST[1]] != "Paid"]
+            manager_df = df[~(df[WHITE_LIST[1]] == "Paid")]
             manager_tuple = tuple(manager_df[WHITE_LIST[0]])
             break
     else:
@@ -80,9 +80,7 @@ def my_move(src: Path, dest: Path) -> None:
         if filecmp.cmp(src, destination, shallow=False):
             src.unlink()
         else:
-            print(
-                f"Skipping move: a different file already exists at {destination}"
-            )
+            print(f"Skipping move: a different file already exists at {destination}")
     else:
         move(src, destination)
 
